@@ -14,6 +14,7 @@
 
 #### 可选参数
 
+- [select](#select)
 - [prefix](#prefix)
 - [suffix](#suffix)
 - [sheet_name](#sheet_name)
@@ -39,6 +40,25 @@
 
 ```sas
 spec = %str(~\ADS程序\分析数据库编程说明\ADaM_specification_V1.0_20250115.xlsx)
+```
+
+---
+
+#### select
+
+**Syntax** : _dataset-1_ <, _dataset-2_ <, ...>>
+
+指定需要创建的空白 ADaM 数据集名称（列表）。
+
+**Default** : `#ALL`
+
+默认情况下，宏程序会尝试创建 [sheet_name](#sheet_name) 工作表中定义的所有 ADaM 数据集。
+
+**Usage** :
+
+```sas
+select = adsl
+select = adsl adae addv
 ```
 
 ---
