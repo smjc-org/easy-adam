@@ -21,7 +21,7 @@
 
 #### 调试参数
 
-- [del_temp_data]()
+- [debug](#debug)
 
 ### 参数说明
 
@@ -114,7 +114,7 @@ range = %str(A1:F255)
 
 ---
 
-#### del_temp_data
+#### debug
 
 指定是否删除中间过程生成的数据集。
 
