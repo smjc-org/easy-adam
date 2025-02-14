@@ -5,7 +5,15 @@
  * Version Date:  2025-02-05 0.1.0
 */
 
-%macro ads_import_excel(file, outdata, sheet_name, range_attr, range_data, warning_var_name_empty = true, warning_var_name_not_meet_v7 = true, warning_var_name_len_gt_8 = true, debug = false) / parmbuff;
+%macro ads_import_excel(file,
+                        outdata,
+                        sheet_name,
+                        range_attr                   = #null,
+                        range_data                   = #null,
+                        warning_var_name_empty       = true,
+                        warning_var_name_not_meet_v7 = true,
+                        warning_var_name_len_gt_8    = true,
+                        debug                        = false) / parmbuff;
     /*  file:                         Excel 文件路径
      *  outdata:                      SAS 数据集名称
      *  sheet_name:                   工作表名称
@@ -29,17 +37,37 @@
     %let debug                        = %upcase(%sysfunc(strip(%bquote(&debug))));
 
     /*读取 Excel 文件*/
-    proc import file = "&file" out = tmp_excel_attr dbms = xlsx replace;
-        sheet = "&sheet_name";
-        range = "&range_attr";
-        getnames = no;
-    run;
+    %if (&range_attr = #NULL and &range_data ^= #NULL) or (&range_attr ^= #NULL and &range_data = #NULL) %then %do;
+        %put ERROR: 参数 RANGE_ATTR 和 RANGE_DATA 必须同时为 #NULL 或者同时不为 #NULL！;
+        %goto exit;
+    %end;
+    %else %if &range_attr = #NULL and &range_data = #NULL %then %do;
+        proc import file = "&file" out = tmp_excel dbms = xlsx replace;
+            sheet = "&sheet_name";
+            getnames = no;
+        run;
 
-    proc import file = "&file" out = tmp_excel_data dbms = xlsx replace;
-        sheet = "&sheet_name";
-        range = "&range_data";
-        getnames = no;
-    run;
+        data tmp_excel_attr;
+            set tmp_excel(firstobs = 1 obs = 2);
+        run;
+
+        data tmp_excel_data;
+            set tmp_excel(firstobs = 3);
+        run;
+    %end;
+    %else %do;
+        proc import file = "&file" out = tmp_excel_attr dbms = xlsx replace;
+            sheet = "&sheet_name";
+            range = "&range_attr";
+            getnames = no;
+        run;
+
+        proc import file = "&file" out = tmp_excel_data dbms = xlsx replace;
+            sheet = "&sheet_name";
+            range = "&range_data";
+            getnames = no;
+        run;
+    %end;
 
     /*转置 tmp_excel_attr*/
     proc transpose data = tmp_excel_attr out = tmp_excel_attr_trans;
@@ -105,7 +133,8 @@
     /*删除中间数据集*/
     %if %bquote(&debug) = %upcase(false) %then %do;
         proc datasets library = work nowarn noprint;
-            delete tmp_excel_attr
+            delete tmp_excel
+                   tmp_excel_attr
                    tmp_excel_data
                    tmp_excel_attr_trans
                    tmp_excel_data_processed
