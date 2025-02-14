@@ -151,7 +151,7 @@ range = %str(A3:U255)
 
 **Default** : `true`
 
-> [!IMPORTANT]
+> [!WARNING]
 >
 > `convert_to_char = true` 时，参数 `clear_format` 无效。
 
@@ -165,7 +165,7 @@ range = %str(A3:U255)
 
 **Default** : `true`
 
-> [!IMPORTANT]
+> [!WARNING]
 >
 > `convert_to_char = true` 时，参数 `clear_informat` 无效。
 
