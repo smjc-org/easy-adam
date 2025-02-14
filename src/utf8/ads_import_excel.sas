@@ -10,6 +10,7 @@
                         sheet_name,
                         range_attr                   = #null,
                         range_data                   = #null,
+                        convert_to_char              = true,
                         warning_var_name_empty       = true,
                         warning_var_name_not_meet_v7 = true,
                         warning_var_name_len_gt_8    = true,
@@ -19,6 +20,7 @@
      *  sheet_name:                   工作表名称
      *  range_attr:                   包含变量名和标签定义的 2*C 单元格区域，其中第一行必须是标签，第二行必须是变量名
      *  range_data:                   包含数据内容的 R*C 单元格区域
+     *  convert_to_char:              是否强制将所有变量转为字符型变量
      *  warning_var_name_empty:       当变量名为空时，是否输出警告信息
      *  warning_var_name_not_meet_v7: 当变量名包含 VALIDVARNAME=V7 下的非法字符时，是否输出警告信息
      *  warning_var_name_len_gt_8:    当变量名长度超过 8 时，是否输出警告信息
@@ -31,6 +33,7 @@
     %let sheet_name                   = %sysfunc(strip(%bquote(&sheet_name)));
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
+    %let convert_to_char              = %upcase(%sysfunc(strip(%bquote(&convert_to_char))));
     %let warning_var_name_empty       = %upcase(%sysfunc(strip(%bquote(&warning_var_name_empty))));
     %let warning_var_name_not_meet_v7 = %upcase(%sysfunc(strip(%bquote(&warning_var_name_not_meet_v7))));
     %let warning_var_name_len_gt_8    = %upcase(%sysfunc(strip(%bquote(&warning_var_name_len_gt_8))));
@@ -125,9 +128,33 @@
             from tmp_excel_data;
     quit;
 
+    /*强制将所有变量转为字符型变量*/
+    %if &convert_to_char = TRUE %then %do;
+        proc sql noprint;
+            select name   into :name_1-   from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_PROCESSED";
+            select type   into :type_1-   from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_PROCESSED";
+            select format into :format_1- from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_PROCESSED";
+            %let var_n = &sqlobs;
+
+            create table tmp_excel_data_converted as
+                select
+                    %do i = 1 %to &var_n;
+                        put(&&name_&i, &&format_&i -L) as &&name_&i
+                        %if &i < &var_n %then %do; %bquote(,) %end;
+                    %end;
+                from tmp_excel_data_processed;
+        quit;
+    %end;
+
     /*创建输出数据集*/
     data &outdata;
-        set tmp_excel_data_processed;
+        set %if &convert_to_char = TRUE %then %do;
+                tmp_excel_data_converted
+            %end;
+            %else %do;
+                tmp_excel_data_processed
+            %end;
+            ;
     run;
 
     /*删除中间数据集*/
@@ -138,6 +165,7 @@
                    tmp_excel_data
                    tmp_excel_attr_trans
                    tmp_excel_data_processed
+                   tmp_excel_data_converted
                    ;
         quit;
     %end;
