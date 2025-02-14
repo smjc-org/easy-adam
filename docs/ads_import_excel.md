@@ -21,6 +21,7 @@
 - [convert_to_char](#convert_to_char)
 - [clear_format](#clear_format)
 - [clear_informat](#clear_informat)
+- [ignore_empty_line](#ignore_empty_line)
 - [warning_var_name_empty](#warning_var_name_empty)
 - [warning_var_name_not_meet_v7](#warning_var_name_not_meet_v7)
 - [warning_var_name_len_gt_8](#warning_var_name_len_gt_8)
@@ -168,6 +169,16 @@ range = %str(A3:U255)
 > [!WARNING]
 >
 > `convert_to_char = true` 时，参数 `clear_informat` 无效。
+
+---
+
+#### ignore_empty_line
+
+指定是否忽略空行。
+
+**Syntax** : `true` | `false`
+
+**Default** : `true`
 
 ---
 

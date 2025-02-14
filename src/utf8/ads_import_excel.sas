@@ -13,6 +13,7 @@
                         convert_to_char              = true,
                         clear_format                 = true,
                         clear_informat               = true,
+                        ignore_empty_line            = true,
                         warning_var_name_empty       = true,
                         warning_var_name_not_meet_v7 = true,
                         warning_var_name_len_gt_8    = true,
@@ -25,6 +26,7 @@
      *  convert_to_char:              是否强制将所有变量转为字符型变量
      *  clear_format:                 是否清除变量绑定的输出格式
      *  clear_informat:               是否清除变量绑定的输入格式
+     *  ignore_empty_line:            是否忽略空行
      *  warning_var_name_empty:       当变量名为空时，是否输出警告信息
      *  warning_var_name_not_meet_v7: 当变量名包含 VALIDVARNAME=V7 下的非法字符时，是否输出警告信息
      *  warning_var_name_len_gt_8:    当变量名长度超过 8 时，是否输出警告信息
@@ -40,6 +42,7 @@
     %let convert_to_char              = %upcase(%sysfunc(strip(%bquote(&convert_to_char))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
     %let clear_informat               = %upcase(%sysfunc(strip(%bquote(&clear_informat))));
+    %let ignore_empty_line            = %upcase(%sysfunc(strip(%bquote(&ignore_empty_line))));
     %let warning_var_name_empty       = %upcase(%sysfunc(strip(%bquote(&warning_var_name_empty))));
     %let warning_var_name_not_meet_v7 = %upcase(%sysfunc(strip(%bquote(&warning_var_name_not_meet_v7))));
     %let warning_var_name_len_gt_8    = %upcase(%sysfunc(strip(%bquote(&warning_var_name_len_gt_8))));
@@ -154,6 +157,14 @@
     %else %do;
         data tmp_excel_data_renamed_converted;
             set tmp_excel_data_renamed;
+        run;
+    %end;
+
+    /*移除多余的空行*/
+    %if &ignore_empty_line = TRUE %then %do;
+        data tmp_excel_data_renamed_converted;
+            set tmp_excel_data_renamed_converted;
+            if missing(catt(of _all_)) then delete;
         run;
     %end;
 
