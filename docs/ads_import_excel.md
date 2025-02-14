@@ -112,7 +112,7 @@ range = %str(A1:U2)
 
 **Default** : `#null`
 
-默认情况下，[sheet_name](#sheet_name) 工作表中的前两行被视为数据定义的单元格范围。
+默认情况下，[sheet_name](#sheet_name) 工作表中的第三行及之后被视为数据定义的单元格范围。
 
 **Usage** :
 
