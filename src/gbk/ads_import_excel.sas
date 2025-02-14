@@ -10,7 +10,7 @@
                         sheet_name,
                         range_attr                   = #null,
                         range_data                   = #null,
-                        convert_to_char              = true,
+                        all_chars                    = true,
                         clear_format                 = true,
                         clear_informat               = true,
                         ignore_empty_line            = true,
@@ -23,7 +23,7 @@
      *  sheet_name:                   工作表名称
      *  range_attr:                   包含变量名和标签定义的 2*C 单元格区域，其中第一行必须是标签，第二行必须是变量名
      *  range_data:                   包含数据内容的 R*C 单元格区域
-     *  convert_to_char:              是否强制将所有变量转为字符型变量
+     *  all_chars:                    是否将所有变量视为字符型变量
      *  clear_format:                 是否清除变量绑定的输出格式
      *  clear_informat:               是否清除变量绑定的输入格式
      *  ignore_empty_line:            是否忽略空行
@@ -39,7 +39,7 @@
     %let sheet_name                   = %sysfunc(strip(%bquote(&sheet_name)));
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
-    %let convert_to_char              = %upcase(%sysfunc(strip(%bquote(&convert_to_char))));
+    %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
     %let clear_informat               = %upcase(%sysfunc(strip(%bquote(&clear_informat))));
     %let ignore_empty_line            = %upcase(%sysfunc(strip(%bquote(&ignore_empty_line))));
@@ -49,6 +49,10 @@
     %let debug                        = %upcase(%sysfunc(strip(%bquote(&debug))));
 
     /*读取 Excel 文件*/
+    %if &all_chars = TRUE %then %do;
+        %let EFI_ALLCHARS = YES;
+    %end;
+
     %if (&range_attr = #NULL and &range_data ^= #NULL) or (&range_attr ^= #NULL and &range_data = #NULL) %then %do;
         %put ERROR: 参数 RANGE_ATTR 和 RANGE_DATA 必须同时为 #NULL 或者同时不为 #NULL！;
         %goto exit;
@@ -137,40 +141,17 @@
             from tmp_excel_data;
     quit;
 
-    /*强制将所有变量转为字符型变量*/
-    %if &convert_to_char = TRUE %then %do;
-        proc sql noprint;
-            select name   into :name_1-   from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_RENAMED";
-            select type   into :type_1-   from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_RENAMED";
-            select format into :format_1- from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA_RENAMED";
-            %let var_n = &sqlobs;
-
-            create table tmp_excel_data_renamed_converted as
-                select
-                    %do i = 1 %to &var_n;
-                        put(&&name_&i, &&format_&i -L) as &&name_&i
-                        %if &i < &var_n %then %do; %bquote(,) %end;
-                    %end;
-                from tmp_excel_data_renamed;
-        quit;
-    %end;
-    %else %do;
-        data tmp_excel_data_renamed_converted;
-            set tmp_excel_data_renamed;
-        run;
-    %end;
-
     /*移除多余的空行*/
     %if &ignore_empty_line = TRUE %then %do;
-        data tmp_excel_data_renamed_converted;
-            set tmp_excel_data_renamed_converted;
+        data tmp_excel_data_renamed;
+            set tmp_excel_data_renamed;
             if missing(catt(of _all_)) then delete;
         run;
     %end;
 
     /*清除所有变量的 format 和 informat*/
     proc datasets library = work noprint nowarn;
-        modify tmp_excel_data_renamed_converted;
+        modify tmp_excel_data_renamed;
         %if &clear_format = TRUE %then %do;
             attrib _all_ format=;
         %end;
@@ -182,7 +163,7 @@
 
     /*创建输出数据集*/
     data &outdata;
-        set tmp_excel_data_renamed_converted;
+        set tmp_excel_data_renamed;
     run;
 
     /*删除中间数据集*/
@@ -193,11 +174,11 @@
                    tmp_excel_data
                    tmp_excel_attr_trans
                    tmp_excel_data_renamed
-                   tmp_excel_data_renamed_converted
                    ;
         quit;
     %end;
 
     %exit:
+    %let EFI_ALLCHARS = NO;
     %put NOTE: 宏程序 ads_import_excel 已结束运行！;
 %mend;
