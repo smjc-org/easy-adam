@@ -18,7 +18,7 @@
 
 - [range_attr](#range_attr)
 - [range_data](#range_data)
-- [convert_to_char](#convert_to_char)
+- [all_chars](#all_chars)
 - [clear_format](#clear_format)
 - [clear_informat](#clear_informat)
 - [ignore_empty_line](#ignore_empty_line)
@@ -126,9 +126,9 @@ range = %str(A3:U255)
 
 ---
 
-#### convert_to_char
+#### all_chars
 
-指定是否强制将所有变量转为字符型变量。
+指定是否将所有变量都视为字符型变量。
 
 **Syntax** : `true` | `false`
 
@@ -136,11 +136,16 @@ range = %str(A3:U255)
 
 > [!IMPORTANT]
 >
-> - `convert_to_char = true` 时，宏程序会将读取到的所有变量统一转为字符型变量，这在 Excel 文件频繁更新的情况下非常有用，
+> - `all_chars = true` 时，宏程序会以字符形式读取所有变量，这在 Excel 文件频繁更新的情况下非常有用，
 >   因为可能存在某一次数据的更新导致通过 `PROC IMPORT` 过程读入 SAS 时，某个变量的类型由数值型变为字符型，进而导致相关程序不得不频繁更新，给编程带来不必要的麻烦；
-> - `convert_to_char = true` 时，日期型变量的值会以 Excel 内部数值的字符串形式进行表示，可以使用 `input(xxxDAT, 8.) + "30DEC1899"d` 转为 SAS 日期型变量；
-> - `convert_to_char = true` 时，变量的前导空格将会被删除；
-> - `convert_to_char = true` 时，所有变量的输出格式和输入格式都将被清除，无需指定 `clear_format = true` 或 `clear_informat = true`。
+> - `all_chars = true` 时，日期型变量的值会以 Excel 内部数值的字符串形式进行表示，可以使用 `input(xxx, 8.) + "30DEC1899"d` 转为 SAS 日期型变量；
+> - `all_chars = true` 时，部分数值可能以科学计数法的形式表示，可以使用 `input(xxx, best32.)` 转为一般形式；
+> - `all_chars = true` 时，变量的前导空格将会被删除；
+> - `all_chars = true` 时，所有变量的输出格式和输入格式都将被清除，无需指定 `clear_format = true` 或 `clear_informat = true`。
+
+> [!IMPORTANT]
+>
+> 修改参数 `all_chars` 的值实际上是在修改宏变量 [EFI_ALLCHARS](https://documentation.sas.com/doc/zh-CN/pgmsascdc/9.4_3.5/proc/p12uk352fte2h1n1efh4r44dmxmp.htm#n0eph5ecq6gxten1cl8kswhtepon) 的值。
 
 ---
 
@@ -154,7 +159,7 @@ range = %str(A3:U255)
 
 > [!WARNING]
 >
-> `convert_to_char = true` 时，参数 `clear_format` 无效。
+> `all_chars = true` 时，参数 `clear_format` 无效。
 
 ---
 
@@ -168,7 +173,7 @@ range = %str(A3:U255)
 
 > [!WARNING]
 >
-> `convert_to_char = true` 时，参数 `clear_informat` 无效。
+> `all_chars = true` 时，参数 `clear_informat` 无效。
 
 ---
 
