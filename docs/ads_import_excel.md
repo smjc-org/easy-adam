@@ -13,11 +13,11 @@
 - [file](#file)
 - [outdata](#outdata)
 - [sheet_name](#sheet_name)
-- [range_attr](#range_attr)
-- [range_data](#range_data)
 
 #### 可选参数
 
+- [range_attr](#range_attr)
+- [range_data](#range_data)
 - [warning_var_name_empty](#warning_var_name_empty)
 - [warning_var_name_not_meet_v7](#warning_var_name_not_meet_v7)
 - [warning_var_name_len_gt_8](#warning_var_name_len_gt_8)
@@ -81,12 +81,16 @@ sheet_name = %str(方案偏离清单)
 
 指定 [sheet_name](#sheet_name) 工作表中变量定义的单元格范围。
 
-**Syntax** : _range_
+**Syntax** : _range_ | `#null`
 
 > [!IMPORTANT]
 >
 > - _range_ 是符合正则表达式 `^[A-Za-z]+[0-9]+:[A-Za-z]+[0-9]+$` 的字符串，例如：`A1:F255`
 > - _range_ 指定的范围中，第一行必须是变量标签的定义，第二行必须是变量名的定义
+
+**Default** : `#null`
+
+默认情况下，[sheet_name](#sheet_name) 工作表中的前两行被视为变量定义的单元格范围。
 
 **Usage** :
 
@@ -100,11 +104,15 @@ range = %str(A1:U2)
 
 指定 [sheet_name](#sheet_name) 工作表中数据定义的单元格范围。
 
-**Syntax** : _range_
+**Syntax** : _range_ | `#null`
 
 > [!IMPORTANT]
 >
 > - _range_ 是符合正则表达式 `^[A-Za-z]+[0-9]+:[A-Za-z]+[0-9]+$` 的字符串，例如：`A1:F255`
+
+**Default** : `#null`
+
+默认情况下，[sheet_name](#sheet_name) 工作表中的前两行被视为数据定义的单元格范围。
 
 **Usage** :
 
