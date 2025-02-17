@@ -63,6 +63,7 @@ file = %str(~\原始数据\方案偏离清单-20250125.xlsx)
 
 ```sas
 outdata = dv
+outdata = dv(where = (dvyn = "是"))
 ```
 
 ---
