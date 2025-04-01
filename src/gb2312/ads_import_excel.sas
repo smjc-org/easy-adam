@@ -2,7 +2,7 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-02-14
+ * Version Date:  2025-04-01
 */
 
 %macro ads_import_excel(file,
@@ -145,7 +145,10 @@
     %if &ignore_empty_line = TRUE %then %do;
         data tmp_excel_data_renamed;
             set tmp_excel_data_renamed;
-            if missing(catt(of _all_)) then delete;
+            if cmiss(%do i = 1 %to &var_n;
+                         &&var_new_name_&i
+                         %if &i < &var_n %then %do; %bquote(,) %end;
+                     %end;) = &var_n then delete;
         run;
     %end;
 
