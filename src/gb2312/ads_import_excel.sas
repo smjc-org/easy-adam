@@ -37,7 +37,6 @@
     /*统一参数大小写*/
     %let file                         = %sysfunc(strip(%bquote(&file)));
     %let outdata                      = %sysfunc(strip(%bquote(&outdata)));
-    %let sheet_name                   = %sysfunc(strip(%bquote(&sheet_name)));
     %let dbms                         = %upcase(%sysfunc(strip(%bquote(&dbms))));
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
