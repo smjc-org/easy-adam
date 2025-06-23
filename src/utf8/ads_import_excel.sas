@@ -102,14 +102,12 @@
     %end;
     %else %do;
         proc import file = "&file" out = tmp_excel_attr dbms = &dbms replace;
-            sheet = "&sheet_name";
-            range = "&range_attr";
+            range = "&sheet_name$&range_attr";
             getnames = no;
         run;
 
         proc import file = "&file" out = tmp_excel_data dbms = &dbms replace;
-            sheet = "&sheet_name";
-            range = "&range_data";
+            range = "&sheet_name$&range_data";
             getnames = no;
         run;
     %end;
@@ -118,6 +116,27 @@
     proc transpose data = tmp_excel_attr out = tmp_excel_attr_trans;
         var _all_;
     run;
+    /*如果 range_attr 只有一行，则尝试将这一行视为变量名，若不可行，则将这一行视为变量标签，并使用默认的变量名（F1~Fn 或 A~Z）*/
+    proc sql noprint;
+        select * from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_ATTR_TRANS" and name = "COL2";
+    quit;
+    %if &sqlobs = 0 %then %do;
+        proc sql noprint;
+            select ifc(sum(notname(strip(COL1))) = 0, "TRUE", "FALSE") into :ALL_COL1_VALID_FOR_V7_NAME from tmp_excel_attr_trans;
+        quit;
+        %if &ALL_COL1_VALID_FOR_V7_NAME = TRUE %then %do;
+            data tmp_excel_attr_trans;
+                set tmp_excel_attr_trans;
+                COL2 = COL1;
+            run;
+        %end;
+        %else %do;
+            data tmp_excel_attr_trans;
+                set tmp_excel_attr_trans;
+                COL2 = _NAME_;
+            run;
+        %end;
+    %end;
 
     /*获取变量名称和变量标签*/
     proc sql noprint;
