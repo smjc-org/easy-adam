@@ -2,12 +2,13 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-04-01
+ * Version Date:  2025-06-23
 */
 
 %macro ads_import_excel(file,
                         outdata,
                         sheet_name,
+                        dbms                         = #auto,
                         range_attr                   = #null,
                         range_data                   = #null,
                         all_chars                    = true,
@@ -37,6 +38,7 @@
     %let file                         = %sysfunc(strip(%bquote(&file)));
     %let outdata                      = %sysfunc(strip(%bquote(&outdata)));
     %let sheet_name                   = %sysfunc(strip(%bquote(&sheet_name)));
+    %let dbms                         = %upcase(%sysfunc(strip(%bquote(&dbms))));
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
     %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
@@ -48,6 +50,33 @@
     %let warning_var_name_len_gt_8    = %upcase(%sysfunc(strip(%bquote(&warning_var_name_len_gt_8))));
     %let debug                        = %upcase(%sysfunc(strip(%bquote(&debug))));
 
+    /*识别 DBMS*/
+    %if &dbms = #AUTO %then %do;
+        %if %sysfunc(fileref(&file)) = 0 %then %do;
+            %let path = %sysfunc(pathname(&file));
+        %end;
+        %else %do;
+            %let path = &file;
+        %end;
+
+        %let path = %sysfunc(translate(&path, '/', '\'));
+        %let filename = %scan(&path, -1, /);
+        %let ext = %scan(&filename, -1, .);
+
+        %if "&ext" = "&filename" %then %let ext = xlsx;
+
+        %if &ext = xlsx or &ext = xlsm %then %do;
+            %let dbms = xlsx;
+        %end;
+        %else %if &ext = xls %then %do;
+            %let dbms = excel;
+        %end;
+        %else %do;
+            %put ERROR: 不支持的数据格式 &ext ！;
+            %goto exit;
+        %end;
+    %end;
+
     /*读取 Excel 文件*/
     %if &all_chars = TRUE %then %do;
         %let EFI_ALLCHARS = YES;
@@ -58,7 +87,7 @@
         %goto exit;
     %end;
     %else %if &range_attr = #NULL and &range_data = #NULL %then %do;
-        proc import file = "&file" out = tmp_excel dbms = xlsx replace;
+        proc import file = "&file" out = tmp_excel dbms = &dbms replace;
             sheet = "&sheet_name";
             getnames = no;
         run;
@@ -72,13 +101,13 @@
         run;
     %end;
     %else %do;
-        proc import file = "&file" out = tmp_excel_attr dbms = xlsx replace;
+        proc import file = "&file" out = tmp_excel_attr dbms = &dbms replace;
             sheet = "&sheet_name";
             range = "&range_attr";
             getnames = no;
         run;
 
-        proc import file = "&file" out = tmp_excel_data dbms = xlsx replace;
+        proc import file = "&file" out = tmp_excel_data dbms = &dbms replace;
             sheet = "&sheet_name";
             range = "&range_data";
             getnames = no;
