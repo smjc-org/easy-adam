@@ -16,6 +16,7 @@
 
 #### 可选参数
 
+- [dbms](#dbms)
 - [range_attr](#range_attr)
 - [range_data](#range_data)
 - [all_chars](#all_chars)
@@ -34,13 +35,13 @@
 
 #### file
 
-**Syntax** : _filename_
+**Syntax** : _physical_path_ | _filename_
 
 指定 Excel 文件路径。
 
 > [!IMPORTANT]
 >
-> 1. `file` 文件必须是 `.xlsx` 格式
+> 1. `file` 文件必须是 `.xlsx`, `.xlsm`, `.xls` 格式
 > 2. `file` 文件必须包含一张定义了需要导入的变量和数据的工作表 `sheet_name`，可使用参数 [sheet_name](#sheet_name) 指定工作表名称
 > 3. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $2 \times C$ 单元格范围 `range_attr`，该单元格范围中的第一行必须是对变量标签的定义，第二行必须是对变量名的定义，可使用 [range_attr](#range_attr) 指定这个范围
 > 4. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $R \times C$ 单元格范围 `range_data`，该单元格范围中的数据即为需要导入的数据，可使用 [range_data](#range_data) 指定这个范围
@@ -79,6 +80,23 @@ outdata = dv(where = (dvyn = "是"))
 ```
 sheet_name = %str(方案偏离清单)
 ```
+
+---
+
+#### dbms
+
+指定源数据类型。
+
+**Syntax** : _dbms_ | `#auto`
+
+**Default** : `#auto`
+
+默认情况下，参数 [dbms](#dbms) 的值取决于参数 [file](#file) 指定的文件的后缀名，如下表所示：
+
+| 后缀名           | _dbms_ 取值 |
+| ---------------- | ----------- |
+| `.xls`           | `excel`     |
+| `.xlsx`, `.xlsm` | `xlsx`      |
 
 ---
 
