@@ -51,11 +51,16 @@
 
     /*识别 DBMS*/
     %if &dbms = #AUTO %then %do;
-        %if %sysfunc(fileref(&file)) = 0 %then %do;
-            %let path = %sysfunc(pathname(&file));
+        %if %length(&file) > 8 %then %do;
+            %let path = &file;
         %end;
         %else %do;
-            %let path = &file;
+            %if %sysfunc(fileref(&file)) = 0 %then %do;
+                %let path = %sysfunc(pathname(&file));
+            %end;
+            %else %do;
+                %let path = &file;
+            %end;
         %end;
 
         %let path = %sysfunc(translate(&path, '/', '\'));
