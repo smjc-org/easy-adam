@@ -2,7 +2,7 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-06-23
+ * Version Date:  2025-07-17
 */
 
 %macro ads_import_excel(file,
@@ -10,6 +10,7 @@
                         sheet_name,
                         dbms                         = #auto,
                         range_attr                   = #null,
+                        range_attr_row_index         = %str(2, 1),
                         range_data                   = #null,
                         all_chars                    = true,
                         clear_format                 = true,
@@ -22,8 +23,9 @@
     /*  file:                         Excel 文件路径
      *  outdata:                      SAS 数据集名称
      *  sheet_name:                   工作表名称
-     *  range_attr:                   包含变量名和标签定义的 2*C 单元格区域，其中第一行必须是标签，第二行必须是变量名
-     *  range_data:                   包含数据内容的 R*C 单元格区域
+     *  range_attr:                   包含变量名和标签定义的单元格区域，其中必须包含一行标签和一行变量名
+     *  range_attr_row_index:         单元格区域 range_attr 内代表变量名和标签的行索引（行索引从 range_attr 指定的单元格区域的第一行开始计数，起始行号为 1，步进 1）
+     *  range_data:                   包含数据内容的单元格区域
      *  all_chars:                    是否将所有变量视为字符型变量
      *  clear_format:                 是否清除变量绑定的输出格式
      *  clear_informat:               是否清除变量绑定的输入格式
@@ -39,6 +41,7 @@
     %let outdata                      = %sysfunc(strip(%bquote(&outdata)));
     %let dbms                         = %upcase(%sysfunc(strip(%bquote(&dbms))));
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
+    %let range_attr_row_index         = %upcase(%sysfunc(strip(%bquote(&range_attr_row_index))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
     %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
@@ -140,13 +143,34 @@
                 COL2 = _NAME_;
             run;
         %end;
+
+        %let range_attr_row_index = %bquote(2, 1);
     %end;
 
     /*获取变量名称和变量标签*/
+    %let range_attr_row_var_name_index  = %scan(%bquote(&range_attr_row_index), 1, %bquote(, ));
+    %let range_attr_row_var_label_index = %scan(%bquote(&range_attr_row_index), 2, %bquote(, ));
     proc sql noprint;
-        select _NAME_       into :var_old_name_1-  from tmp_excel_attr_trans;
-        select kstrip(COL2) into :var_new_name_1-  from tmp_excel_attr_trans;
-        select kstrip(COL1) into :var_new_label_1- from tmp_excel_attr_trans;
+        select count(*) - 2 into :range_attr_row_index_max from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_ATTR_TRANS";
+    quit;
+    %let IS_VALID_ROW_INDEX = TRUE;
+    %if &range_attr_row_var_name_index > &range_attr_row_index_max %then %do;
+        %put ERROR: 指定的变量名称的行索引 &range_attr_row_var_name_index 超出范围！;
+        %let IS_VALID_ROW_INDEX = FALSE;
+    %end;
+    %if &range_attr_row_var_label_index > &range_attr_row_index_max %then %do;
+        %put ERROR: 指定的变量标签的行索引 &range_attr_row_var_label_index 超出范围！;
+        %let IS_VALID_ROW_INDEX = FALSE;
+    %end;
+
+    %if &IS_VALID_ROW_INDEX = FALSE %then %do;
+        %goto exit;
+    %end;
+
+    proc sql noprint;
+        select _NAME_                                     into :var_old_name_1-  from tmp_excel_attr_trans;
+        select kstrip(COL&range_attr_row_var_name_index)  into :var_new_name_1-  from tmp_excel_attr_trans;
+        select kstrip(COL&range_attr_row_var_label_index) into :var_new_label_1- from tmp_excel_attr_trans;
     quit;
     %let var_n = &sqlobs;
 
