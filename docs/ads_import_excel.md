@@ -128,7 +128,7 @@ range = %str(A1:U2)
 
 #### range_attr_row_index
 
-指定参数 [range_attr](#range_attr) 指定的单元格区域内，代表变量名和变量标签的行索引（行索引从单元格区域的第一行开始计数，起始行号为 1，步进 1）。
+指定 [range_attr](#range_attr) 单元格区域内代表变量名和变量标签的行索引（行索引从单元格区域的第一行开始计数，起始行号为 1，步进为 1）。
 
 **Syntax**: _var_name_index_, _var_label_index_
 
