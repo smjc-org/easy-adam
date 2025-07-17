@@ -18,6 +18,7 @@
 
 - [dbms](#dbms)
 - [range_attr](#range_attr)
+- [range_attr_row_index](#range_attr_row_index)
 - [range_data](#range_data)
 - [all_chars](#all_chars)
 - [clear_format](#clear_format)
@@ -110,9 +111,8 @@ sheet_name = %str(方案偏离清单)
 >
 > - _range_ 是符合正则表达式 `^[A-Za-z]+[0-9]+:[A-Za-z]+[0-9]+$` 的字符串，例如：`A1:F255`
 > - _range_ 指定的范围有以下三种类型：
->   - 若 _range_ 指定的范围是一行（例如 `A1:F1`），则自动检测这一行中的文本是否均为 `VALIDVARNAME=V7` 下的合法变量名，若是，则这一行中的文本将被同时用作输出数据集的变量标签和变量名，若不是，则这一行中的文本将被用作输出数据集的变量标签，变量名则使用默认生成的变量名（`F1` ~ `Fn`，`A` ~ `Z`，...）；
->   - 若 _range_ 指定的范围是两行（例如 `A1:F2`），则第一行被用作输出数据集的变量标签，第二行被用作输出数据集的变量名；
->   - 若 _range_ 指定的范围是 $n$ 行 ($n \ge 3$)，则第一行被用作输出数据集的变量标签，第二行被用作输出数据集的变量名，第 $n$ ($n \ge 3$) 行将被忽略。
+>   - 若 _range_ 指定的范围是一行（例如 `A1:F1`），则自动检测这一行中的文本是否均为 `VALIDVARNAME=V7` 下的合法变量名，若是，则这一行中的文本将被同时用作输出数据集的变量名和变量标签，若不是，则这一行中的文本将被用作输出数据集的变量标签，变量名则使用默认生成的变量名（`F1` ~ `Fn`，`A` ~ `Z`，...）；
+>   - 若 _range_ 指定的范围是 $n$ 行 ($n \ge 2$)，则根据参数 [range_attr_row_index](#range_attr_row_index) 的值决定哪两行被用作输出数据集的变量名和变量标签，其余行将被忽略。
 
 **Default** : `#null`
 
@@ -123,6 +123,20 @@ sheet_name = %str(方案偏离清单)
 ```sas
 range = %str(A1:U2)
 ```
+
+---
+
+#### range_attr_row_index
+
+指定参数 [range_attr](#range_attr) 指定的单元格区域内，代表变量名和变量标签的行索引（行索引从单元格区域的第一行开始计数，起始行号为 1，步进 1）。
+
+**Syntax**: _var_name_index_, _var_label_index_
+
+> [!WARNING]
+>
+> 仅当参数 [range_attr](#range_attr) 指定的单元格范围行数不少于 2 时，参数 [range_attr_row_index](#range_attr_row_index) 才起作用。
+
+**Default** : `%str(2, 1)`
 
 ---
 
