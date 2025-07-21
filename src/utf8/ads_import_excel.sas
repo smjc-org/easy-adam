@@ -2,7 +2,7 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-07-17
+ * Version Date:  2025-07-21
 */
 
 %macro ads_import_excel(file,
@@ -12,6 +12,7 @@
                         range_attr                   = #null,
                         range_attr_row_index         = %str(2, 1),
                         range_data                   = #null,
+                        sort_by                      = #null,
                         all_chars                    = true,
                         clear_format                 = true,
                         clear_informat               = true,
@@ -26,6 +27,7 @@
      *  range_attr:                   包含变量名和标签定义的单元格区域，其中必须包含一行标签和一行变量名
      *  range_attr_row_index:         单元格区域 range_attr 内代表变量名和标签的行索引（行索引从 range_attr 指定的单元格区域的第一行开始计数，起始行号为 1，步进 1）
      *  range_data:                   包含数据内容的单元格区域
+     *  sort_by:                      用于对输出数据集排序的变量（可指定排序方向）
      *  all_chars:                    是否将所有变量视为字符型变量
      *  clear_format:                 是否清除变量绑定的输出格式
      *  clear_informat:               是否清除变量绑定的输入格式
@@ -43,6 +45,7 @@
     %let range_attr                   = %upcase(%sysfunc(strip(%bquote(&range_attr))));
     %let range_attr_row_index         = %upcase(%sysfunc(strip(%bquote(&range_attr_row_index))));
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
+    %let sort_by                      = %upcase(%sysfunc(strip(%bquote(&sort_by))));
     %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
     %let clear_informat               = %upcase(%sysfunc(strip(%bquote(&clear_informat))));
@@ -241,9 +244,16 @@
     quit;
 
     /*创建输出数据集*/
-    data &outdata;
-        set tmp_excel_data_renamed;
-    run;
+    %if %bquote(&sort_by) ^= #NULL %then %do;
+        proc sort data = tmp_excel_data_renamed out = &outdata;
+            by &sort_by;
+        run;
+    %end;
+    %else %do;
+        data &outdata;
+            set tmp_excel_data_renamed;
+        run;
+    %end;
 
     /*删除中间数据集*/
     %if %bquote(&debug) = %upcase(false) %then %do;
