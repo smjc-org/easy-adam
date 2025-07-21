@@ -20,6 +20,7 @@
 - [range_attr](#range_attr)
 - [range_attr_row_index](#range_attr_row_index)
 - [range_data](#range_data)
+- [sort_by](#sort_by)
 - [all_chars](#all_chars)
 - [clear_format](#clear_format)
 - [clear_informat](#clear_informat)
@@ -158,6 +159,23 @@ range = %str(A1:U2)
 
 ```sas
 range = %str(A3:U255)
+```
+
+---
+
+#### sort_by
+
+指定用于对数据集 [outdata](#outdata) 排序的变量，可指定倒序选项。
+
+**Syntax**: <`descending`> _var-1_ <<`descending`> _var-2_ ...>
+
+**Default**: `#null`
+
+**Usage**:
+
+```sas
+sort_by = %str(SUBJID)
+sort_by = %str(SUBJID AESEQ)
 ```
 
 ---
