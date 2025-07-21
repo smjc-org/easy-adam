@@ -169,7 +169,7 @@ range = %str(A3:U255)
 
 **Syntax**: <`descending`> _var-1_ <<`descending`> _var-2_ ...>
 
-**Default**: `_null_`
+**Default**: `#null`
 
 **Usage**:
 
