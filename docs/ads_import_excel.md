@@ -43,10 +43,10 @@
 
 > [!IMPORTANT]
 >
-> 1. `file` 文件必须是 `.xlsx`, `.xlsm`, `.xls` 格式
-> 2. `file` 文件必须包含一张定义了需要导入的变量和数据的工作表 `sheet_name`，可使用参数 [sheet_name](#sheet_name) 指定工作表名称
-> 3. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $2 \times C$ 单元格范围 `range_attr`，该单元格范围中的第一行必须是对变量标签的定义，第二行必须是对变量名的定义，可使用 [range_attr](#range_attr) 指定这个范围
-> 4. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $R \times C$ 单元格范围 `range_data`，该单元格范围中的数据即为需要导入的数据，可使用 [range_data](#range_data) 指定这个范围
+> 1. `file` 文件必须是 `.xlsx`, `.xlsm`, `.xls` 格式；
+> 2. `file` 文件必须包含一张定义了需要导入的变量和数据的工作表 `sheet_name`，可使用参数 [sheet_name](#sheet_name) 指定工作表名称；
+> 3. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $R \times C$ 单元格范围 `range_attr`，该单元格范围必须包含两行关键信息，一行是对变量标签的定义，一行是对变量名的定义，可使用 [range_attr](#range_attr) 指定这个范围，使用 [range_attr_row_index](#range_attr_row_index) 指定这两行关键信息的行索引；
+> 4. `file` 文件的工作表 `sheet_name` 中，必须包含一个 $R \times C$ 单元格范围 `range_data`，该单元格范围中的数据即为需要导入的数据，可使用 [range_data](#range_data) 指定这个范围。
 
 **Usage** :
 
