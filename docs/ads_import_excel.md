@@ -186,7 +186,7 @@ sort_by = %str(SUBJID AESEQ)
 
 **Syntax** : `true` | `false`
 
-**Default** : `true`
+**Default** : `false`
 
 > [!IMPORTANT]
 >
@@ -196,10 +196,6 @@ sort_by = %str(SUBJID AESEQ)
 > - `all_chars = true` 时，部分数值可能以科学计数法的形式表示，可以使用 `input(xxx, best32.)` 转为一般形式；
 > - `all_chars = true` 时，变量的前导空格将会被删除；
 > - `all_chars = true` 时，所有变量的输出格式和输入格式都将被清除，无需指定 `clear_format = true` 或 `clear_informat = true`。
-
-> [!IMPORTANT]
->
-> 修改参数 `all_chars` 的值实际上是在修改宏变量 [EFI_ALLCHARS](https://documentation.sas.com/doc/zh-CN/pgmsascdc/9.4_3.5/proc/p12uk352fte2h1n1efh4r44dmxmp.htm#n0eph5ecq6gxten1cl8kswhtepon) 的值。
 
 ---
 
