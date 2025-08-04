@@ -2,7 +2,7 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-07-21
+ * Version Date:  2025-08-04
 */
 
 %macro ads_import_excel(file,
@@ -13,7 +13,7 @@
                         range_attr_row_index         = %str(2, 1),
                         range_data                   = #null,
                         sort_by                      = #null,
-                        all_chars                    = true,
+                        all_chars                    = false,
                         clear_format                 = true,
                         clear_informat               = true,
                         ignore_empty_line            = true,
@@ -47,6 +47,7 @@
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
     %let sort_by                      = %upcase(%sysfunc(strip(%bquote(&sort_by))));
     %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
+    %let fixed_chars                  = %upcase(%sysfunc(strip(%bquote(&fixed_chars))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
     %let clear_informat               = %upcase(%sysfunc(strip(%bquote(&clear_informat))));
     %let ignore_empty_line            = %upcase(%sysfunc(strip(%bquote(&ignore_empty_line))));
@@ -88,10 +89,6 @@
     %end;
 
     /*读取 Excel 文件*/
-    %if &all_chars = TRUE %then %do;
-        %let EFI_ALLCHARS = YES;
-    %end;
-
     %if (&range_attr = #NULL and &range_data ^= #NULL) or (&range_attr ^= #NULL and &range_data = #NULL) %then %do;
         %put ERROR: 参数 RANGE_ATTR 和 RANGE_DATA 必须同时为 #NULL 或者同时不为 #NULL！;
         %goto exit;
@@ -150,7 +147,7 @@
         %let range_attr_row_index = %bquote(2, 1);
     %end;
 
-    /*获取变量名称和变量标签*/
+    /*获取变量名称、变量标签、变量输出格式*/
     %let range_attr_row_var_name_index  = %scan(%bquote(&range_attr_row_index), 1, %bquote(, ));
     %let range_attr_row_var_label_index = %scan(%bquote(&range_attr_row_index), 2, %bquote(, ));
     proc sql noprint;
@@ -175,6 +172,11 @@
         select kstrip(COL&range_attr_row_var_name_index)  into :var_new_name_1-  from tmp_excel_attr_trans;
         select kstrip(COL&range_attr_row_var_label_index) into :var_new_label_1- from tmp_excel_attr_trans;
     quit;
+
+    proc sql noprint;
+        select kstrip(format) into :var_raw_format_1- from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA";
+    quit;
+
     %let var_n = &sqlobs;
 
     /*检查变量名是否符合规范*/
@@ -209,13 +211,21 @@
         %end;
     %end;
 
-    /*修改变量名称和变量标签*/
+    /*修改变量名称、变量标签、变量类型（可选）*/
     proc sql noprint;
         create table tmp_excel_data_renamed as
             select
-                %do i = 1 %to &var_n;
-                    &&var_old_name_&i as &&var_new_name_&i label = %unquote(%str(%')%superq(var_new_label_&i)%str(%'))
-                    %if &i < &var_n %then %do; %bquote(,) %end;
+                %if &all_chars = TRUE %then %do;
+                    %do i = 1 %to &var_n;
+                        put(&&var_old_name_&i, &&var_raw_format_&i -L) as &&var_new_name_&i label = %unquote(%str(%')%superq(var_new_label_&i)%str(%'))
+                        %if &i < &var_n %then %do; %bquote(,) %end;
+                    %end;
+                %end;
+                %else %do;
+                    %do i = 1 %to &var_n;
+                        &&var_old_name_&i as &&var_new_name_&i label = %unquote(%str(%')%superq(var_new_label_&i)%str(%'))
+                        %if &i < &var_n %then %do; %bquote(,) %end;
+                    %end;
                 %end;
             from tmp_excel_data;
     quit;
@@ -268,6 +278,5 @@
     %end;
 
     %exit:
-    %let EFI_ALLCHARS = NO;
     %put NOTE: 宏程序 ads_import_excel 已结束运行！;
 %mend;
