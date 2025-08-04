@@ -22,6 +22,8 @@
 - [range_data](#range_data)
 - [sort_by](#sort_by)
 - [all_chars](#all_chars)
+- [varlist_fixed_char](#varlist_fixed_char)
+- [varlist_fixed_num](#varlist_fixed_num)
 - [clear_format](#clear_format)
 - [clear_informat](#clear_informat)
 - [ignore_empty_line](#ignore_empty_line)
