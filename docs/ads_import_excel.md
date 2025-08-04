@@ -22,6 +22,8 @@
 - [range_data](#range_data)
 - [sort_by](#sort_by)
 - [all_chars](#all_chars)
+- [varlist_fixed_char](#varlist_fixed_char)
+- [varlist_fixed_num](#varlist_fixed_num)
 - [clear_format](#clear_format)
 - [clear_informat](#clear_informat)
 - [ignore_empty_line](#ignore_empty_line)
@@ -196,6 +198,34 @@ sort_by = %str(SUBJID AESEQ)
 > - `all_chars = true` 时，部分数值可能以科学计数法的形式表示，可以使用 `input(xxx, best32.)` 转为一般形式；
 > - `all_chars = true` 时，变量的前导空格将会被删除；
 > - `all_chars = true` 时，所有变量的输出格式和输入格式都将被清除，无需指定 `clear_format = true` 或 `clear_informat = true`。
+
+---
+
+#### varlist_fixed_char
+
+指定一个变量名列表，其中的变量均被视为字符型变量，若读取后存储为数值型变量，则宏程序会自动将其转换为字符型变量。
+
+**Syntax**: _var-1_, _var-2_, ...
+
+**Default**: `#null`
+
+> [!WARNING]
+>
+> 若变量读取后已经存储为字符型变量，则宏程序会在日志中输出警告信息。
+
+---
+
+#### varlist_fixed_num
+
+指定一个变量名列表，其中的变量均被视为数值型变量，若读取后存储为字符型变量，则宏程序会自动将其转换为数值型变量。
+
+**Syntax**: _var-1_, _var-2_, ...
+
+**Default**: `#null`
+
+> [!WARNING]
+>
+> 若变量读取后已经存储为数值型变量，则宏程序会在日志中输出警告信息。
 
 ---
 
