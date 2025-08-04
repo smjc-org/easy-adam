@@ -14,6 +14,8 @@
                         range_data                   = #null,
                         sort_by                      = #null,
                         all_chars                    = false,
+                        varlist_fixed_char           = #null,
+                        varlist_fixed_num            = #null,
                         clear_format                 = true,
                         clear_informat               = true,
                         ignore_empty_line            = true,
@@ -29,6 +31,8 @@
      *  range_data:                   包含数据内容的单元格区域
      *  sort_by:                      用于对输出数据集排序的变量（可指定排序方向）
      *  all_chars:                    是否将所有变量视为字符型变量
+     *  varlist_fixed_char:           一个变量名列表，其中的变量均被视为字符型变量
+     *  varlist_fixed_num:            一个变量名列表，其中的变量均被视为数值型变量
      *  clear_format:                 是否清除变量绑定的输出格式
      *  clear_informat:               是否清除变量绑定的输入格式
      *  ignore_empty_line:            是否忽略空行
@@ -47,7 +51,8 @@
     %let range_data                   = %upcase(%sysfunc(strip(%bquote(&range_data))));
     %let sort_by                      = %upcase(%sysfunc(strip(%bquote(&sort_by))));
     %let all_chars                    = %upcase(%sysfunc(strip(%bquote(&all_chars))));
-    %let fixed_chars                  = %upcase(%sysfunc(strip(%bquote(&fixed_chars))));
+    %let varlist_fixed_char           = %upcase(%sysfunc(strip(%bquote(&varlist_fixed_char))));
+    %let varlist_fixed_num            = %upcase(%sysfunc(strip(%bquote(&varlist_fixed_num))));
     %let clear_format                 = %upcase(%sysfunc(strip(%bquote(&clear_format))));
     %let clear_informat               = %upcase(%sysfunc(strip(%bquote(&clear_informat))));
     %let ignore_empty_line            = %upcase(%sysfunc(strip(%bquote(&ignore_empty_line))));
@@ -174,6 +179,7 @@
     quit;
 
     proc sql noprint;
+        select kstrip(type)   into :var_raw_type_1-   from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA";
         select kstrip(format) into :var_raw_format_1- from dictionary.columns where libname = "WORK" and memname = "TMP_EXCEL_DATA";
     quit;
 
@@ -211,6 +217,50 @@
         %end;
     %end;
 
+    /*添加标识变量，记录已经被固定为字符型和数值型的变量*/
+    %if %bquote(&varlist_fixed_char) ^= #NULL %then %do;
+        %let var_fixed_char_n = %sysfunc(countw(%bquote(&varlist_fixed_char), %bquote(, )));
+        %do i = 1 %to &var_fixed_char_n;
+            %let var_fixed_char_&i = %scan(%bquote(&varlist_fixed_char), &i, %bquote(, ));
+        %end;
+    %end;
+
+    %if %bquote(&varlist_fixed_num) ^= #NULL %then %do;
+        %let var_fixed_num_n  = %sysfunc(countw(%bquote(&varlist_fixed_num), %bquote(, )));
+        %do i = 1 %to &var_fixed_num_n;
+            %let var_fixed_num_&i = %scan(%bquote(&varlist_fixed_num), &i, %bquote(, ));
+        %end;
+    %end;
+
+    data tmp_excel_attr_trans;
+        set tmp_excel_attr_trans;
+        length fixed_char_flag fixed_num_flag $1;
+        fixed_char_flag = "";
+        fixed_num_flag = "";
+        %if %bquote(&varlist_fixed_char) ^= #NULL or %bquote(&varlist_fixed_num) ^= #NULL %then %do;
+            select (COL&range_attr_row_var_name_index);
+                %if %bquote(&varlist_fixed_char) ^= #NULL %then %do;
+                    when (%unquote(%do i = 1 %to &var_fixed_char_n;
+                                       "&&var_fixed_char_&i"
+                                       %if &i < &var_fixed_char_n %then %do; %bquote(,) %end;
+                                   %end;)) fixed_char_flag = "Y";
+                %end;
+                %if %bquote(&varlist_fixed_num) ^= #NULL %then %do;
+                    when (%unquote(%do i = 1 %to &var_fixed_num_n;
+                                       "&&var_fixed_num_&i"
+                                       %if &i < &var_fixed_num_n %then %do; %bquote(,) %end;
+                                   %end;)) fixed_num_flag  = "Y";
+                %end;
+                otherwise;
+            end;
+        %end;
+    run;
+
+    proc sql noprint;
+        select fixed_char_flag into :var_fixed_char_flag_1- from tmp_excel_attr_trans;
+        select fixed_num_flag  into :var_fixed_num_flag_1-  from tmp_excel_attr_trans;
+    quit;
+
     /*修改变量名称、变量标签、变量类型（可选）*/
     proc sql noprint;
         create table tmp_excel_data_renamed as
@@ -223,7 +273,28 @@
                 %end;
                 %else %do;
                     %do i = 1 %to &var_n;
-                        &&var_old_name_&i as &&var_new_name_&i label = %unquote(%str(%')%superq(var_new_label_&i)%str(%'))
+                        %if &&var_fixed_char_flag_&i = Y %then %do;
+                            %if &&var_raw_type_&i = char %then %do;
+                                &&var_old_name_&i
+                                %put WARNING: 列 %superq(var_old_name_&i) 的变量名 %superq(var_new_name_&i) 已经是字符型变量，无需转换！;
+                            %end;
+                            %else %do;
+                                put(&&var_old_name_&i, &&var_raw_format_&i -L)
+                            %end;
+                        %end;
+                        %else %if &&var_fixed_num_flag_&i = Y %then %do;
+                            %if &&var_raw_type_&i = num %then %do;
+                                &&var_old_name_&i
+                                %put WARNING: 列 %superq(var_old_name_&i) 的变量名 %superq(var_new_name_&i) 已经是数值型变量，无需转换！;
+                            %end;
+                            %else %do;
+                                input(&&var_old_name_&i, best.)
+                            %end;
+                        %end;
+                        %else %do;
+                            &&var_old_name_&i
+                        %end;
+                        as &&var_new_name_&i label = %unquote(%str(%')%superq(var_new_label_&i)%str(%'))
                         %if &i < &var_n %then %do; %bquote(,) %end;
                     %end;
                 %end;
