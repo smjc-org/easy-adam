@@ -211,7 +211,8 @@ sort_by = %str(SUBJID AESEQ)
 
 > [!WARNING]
 >
-> 若变量读取后已经存储为字符型变量，则宏程序会在日志中输出警告信息。
+> - 若变量读取后已经存储为字符型变量，则宏程序会在日志中输出警告信息；
+> - `all_chars = true` 时，参数 `varlist_fixed_char` 无效。
 
 ---
 
@@ -225,7 +226,8 @@ sort_by = %str(SUBJID AESEQ)
 
 > [!WARNING]
 >
-> 若变量读取后已经存储为数值型变量，则宏程序会在日志中输出警告信息。
+> - 若变量读取后已经存储为数值型变量，则宏程序会在日志中输出警告信息；
+> - `all_chars = true` 时，参数 `varlist_fixed_num` 无效。
 
 ---
 
