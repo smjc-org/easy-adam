@@ -199,7 +199,7 @@
 
         /*检查变量名是否在 VALIDVARNAME=V7 下合法*/
         %if &warning_var_name_not_meet_v7 = TRUE %then %do;
-            %if %sysfunc(notname(%superq(var_new_name_&i))) > 0 %then %do;
+            %if %sysfunc(notname(%superq(var_new_name_&i))) > 0 or %sysfunc(notdigit(%superq(var_new_name_&i))) = 0 %then %do;
                 %let IS_VALID_VAR_&i = FALSE;
                 %put WARNING: 列 %superq(var_old_name_&i) 的变量名 %superq(var_new_name_&i) 在 VALIDVARNAME=V7 下不合法！;
             %end;
