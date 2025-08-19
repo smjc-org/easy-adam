@@ -2,7 +2,7 @@
  * Macro Name:    ads_import_excel
  * Macro Purpose: 读取 Excel 数据，创建 SAS 数据集
  * Author:        wtwang
- * Version Date:  2025-08-04
+ * Version Date:  2025-08-19
 */
 
 %macro ads_import_excel(file,
@@ -190,24 +190,24 @@
         %let IS_VALID_VAR_&i = TRUE;
 
         /*检查变量名是否为空*/
-        %if &warning_var_name_empty = TRUE %then %do;
-            %if %superq(var_new_name_&i) = %bquote() %then %do;
-                %let IS_VALID_VAR_&i = FALSE;
+        %if %superq(var_new_name_&i) = %bquote() %then %do;
+            %let IS_VALID_VAR_&i = FALSE;
+            %if &warning_var_name_empty = TRUE %then %do;
                 %put WARNING: 列 %superq(var_old_name_&i) 的变量名为空！;
             %end;
         %end;
 
         /*检查变量名是否在 VALIDVARNAME=V7 下合法*/
-        %if &warning_var_name_not_meet_v7 = TRUE %then %do;
-            %if %sysfunc(notname(%superq(var_new_name_&i))) > 0 or %sysfunc(notdigit(%superq(var_new_name_&i))) = 0 %then %do;
-                %let IS_VALID_VAR_&i = FALSE;
+        %if %sysfunc(notname(%superq(var_new_name_&i))) > 0 or %sysfunc(notdigit(%superq(var_new_name_&i))) = 0 %then %do;
+            %let IS_VALID_VAR_&i = FALSE;
+            %if &warning_var_name_not_meet_v7 = TRUE %then %do;
                 %put WARNING: 列 %superq(var_old_name_&i) 的变量名 %superq(var_new_name_&i) 在 VALIDVARNAME=V7 下不合法！;
             %end;
         %end;
 
         /*检查变量名的长度是否超过 8*/
-        %if &warning_var_name_len_gt_8 = TRUE %then %do;
-            %if %length(%superq(var_new_name_&i)) > 8 %then %do;
+        %if %length(%superq(var_new_name_&i)) > 8 %then %do;
+            %if &warning_var_name_len_gt_8 = TRUE %then %do;
                 %put WARNING: 列 %superq(var_old_name_&i) 的变量名 %superq(var_new_name_&i) 的长度超过 8 ！;
             %end;
         %end;
