@@ -2,7 +2,7 @@
 
 ## 简介
 
-sas7bdat -> xpt 批量转换。
+`sas7bdat` -> `xpt` 批量转换。
 
 ## 语法
 
