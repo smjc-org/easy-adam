@@ -10,45 +10,41 @@
 
 #### 必选参数
 
-- [sas7bdat_dir](#base_dir)
-- [xpt_dir](#compare_dir)
-- [format](#outdata)
-
-#### 调试参数
-
-- [debug](#debug)
+- [libref](#libref)
+- [dir](#dir)
+- [format](#format)
 
 ### 参数说明
 
-#### sas7bdat_dir
+#### libref
 
-**Syntax** : _physical_path_
+**Syntax** : _libref_
 
-指定需转换的 `.sas7bdat` 文件所在目录的路径。
+指定需转换的 `.sas7bdat` 文件所在的逻辑库名称。
 
 **Usage** :
 
 ```sas
-file = %str(~\分析数据)
+libref = adam
 ```
 
 ---
 
-#### xpt_dir
+#### dir
 
 **Syntax** : _physical_path_
 
-指定转换后生成的 `.xpt` 文件所在目录的路径。
+指定转换后生成的 `.xpt` 文件存放的目录的路径。
 
 **Usage** :
 
 ```sas
-file = %str(~\分析数据\XPT)
+dir = %str(~\分析数据\XPT)
 ```
 
 > [!NOTE]
 >
-> 如果 `xpt_dir` 指定的目录不存在，则该目录将自动创建。
+> 如果 `dir` 指定的目录不存在，则该目录将自动创建。
 
 ---
 
@@ -56,24 +52,16 @@ file = %str(~\分析数据\XPT)
 
 **Syntax** : `v5` | `v8` | `auto`
 
-指定 XPT 格式的版本，默认为 `v8`。
+指定 XPT 格式的版本。
+
+> [!WARNING]
+>
+> 若指定 `format = auto`，可能会导致 `dir` 中同时存在 `v5` 和 `v8` 格式的 XPT 文件。
+
+**Default** : `v8`
 
 **Usage** :
 
 ```sas
 format = v5
 ```
-
----
-
-#### debug
-
-指定是否开启调试模式。
-
-> [!NOTE]
->
-> 这是一个用于开发者调试的参数，通常不需要关注。
-
-**Syntax** : `true` | `false`
-
-**Default** : `false`
